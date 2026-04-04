@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app.database import db
-from app.routes import people, company, interaction
+from app.routes import people, company, interaction, lead
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -17,6 +17,7 @@ app = FastAPI(title="Knowledge-Graph-CRM", lifespan=lifespan)
 app.include_router(people.router)
 app.include_router(company.router)
 app.include_router(interaction.router)
+app.include_router(lead.router)
 
 @app.get("/")
 async def health_check():
