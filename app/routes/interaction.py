@@ -12,7 +12,7 @@ async def upsert_interaction(interaction: InteractionCreate):
     MERGE (p)-[:PARTICIPATED_IN]->(i)
     RETURN i
     """
-    async with await db.get_session() as session:
+    async with db.get_session() as session:
         result = await session.run(query, interaction.model_dump())
         record = await result.single()
         if not record:

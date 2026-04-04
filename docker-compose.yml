@@ -1,26 +1,8 @@
 services:
-  database:
-    image: neo4j:community
-    container_name: crm-neo4j
-    ports:
-      - "7474:7474" # HTTP for Neo4j Browser
-      - "7687:7687" # Bolt for Python driver
-    environment:
-      - NEO4J_AUTH=${NEO4J_USER}/${NEO4J_PASSWORD}
-    volumes:
-      - neo4j_data:/data
-
   backend:
     build: .
     container_name: crm-api
     ports:
-      - "${API_PORT}:8000"
-    environment:
-      - NEO4J_URI=${NEO4J_URI}
-      - NEO4J_USER=${NEO4J_USER}
-      - NEO4J_PASSWORD=${NEO4J_PASSWORD}
-    depends_on:
-      - database
-
-volumes:
-  neo4j_data:
+      - "${API_PORT:-8000}:8000"
+    env_file:
+      - .env

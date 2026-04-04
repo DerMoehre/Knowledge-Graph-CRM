@@ -11,7 +11,7 @@ async def upsert_company(company: CompanyCreate):
     SET c.industry = $industry, c.website = $website
     RETURN c
     """
-    async with await db.get_session() as session:
+    async with db.get_session() as session:
         result = await session.run(query, company.model_dump())
         record = await result.single()
         if not record:

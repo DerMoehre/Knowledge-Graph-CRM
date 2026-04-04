@@ -22,7 +22,7 @@ async def upsert_lead(lead: LeadCreate):
 
     RETURN l.title as title, c.name as company, p.name as contact
     """
-    async with await db.get_session() as session:
+    async with db.get_session() as session:
         result = await session.run(query, lead.model_dump())
         record = await result.single()
         if not record:
@@ -43,7 +43,7 @@ async def list_dangling_leads(min_value: float = Query(10000, alias='Lead Value'
     RETURN l.title AS lead_title, p.name as stakeholder, last_contact AS last_contact
     ORDER BY last_contact ASC
     """
-    async with await db.get_session() as session:
+    async with db.get_session() as session:
         result = await session.run(query, {"min_value": min_value})
         leads = []
         async for record in result:

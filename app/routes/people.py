@@ -13,7 +13,7 @@ async def upsert_person(person: PersonCreate):
     MERGE (p)-[r:WORKS_AT]->(c)
     RETURN p, c
     """
-    async with await db.get_session() as session:
+    async with db.get_session() as session:
         result = await session.run(query, person.dict())
         record = await result.single()
         if not record:
@@ -27,7 +27,7 @@ async def find_network_path(start_mail: str, target_mail: str):
     MATCH path = shortestPath((start)-[*..8]-(target))
     RETURN path
     """
-    async with await db.get_session() as session:
+    async with db.get_session() as session:
         result = await session.run(query, {
             "start_email": start_mail, 
             "target_email": target_mail
