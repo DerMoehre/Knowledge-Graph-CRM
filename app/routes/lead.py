@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from app.models.lead import LeadCreate
 from app.database import db
 
@@ -32,3 +32,24 @@ async def upsert_lead(lead: LeadCreate):
             "linked_to": record['company'],
             "stakeholder": record['contact']
         }
+    
+@router.get("/")
+async def list_dangling_leads(min_value: float = Query(10000, alias='Lead Value')):
+    query = """
+    MATCH (l:Lead)<-[:STAKEHOLDER_FOR]-(p:Person)
+    WHERE l.value > $min_value
+    OPTIONAL MATCH (p)-[:PARTICIPATED_IN]->(i:Interaction)
+    WITH l, p, max(i.date) AS last_contact
+    RETURN l.title AS lead_title, p.name as stakeholder, last_contact AS last_contact
+    ORDER BY last_contact ASC
+    """
+    async with await db.get_session() as session:
+        result = await session.run(query, {"min_value": min_value})
+        leads = []
+        async for record in result:
+            leads.append({
+                "lead_title": record["lead_title"],
+                "stakeholder": record["stakeholder"],
+                "last_contact": record["last_contact"]
+            })
+        return leads

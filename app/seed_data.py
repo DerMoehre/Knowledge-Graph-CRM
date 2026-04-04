@@ -6,6 +6,41 @@ import logging
 
 fake = Faker()
 logging.basicConfig(level=logging.INFO)
+
+async def create_interconnections(session, companies):
+    logging.info("Creating strategic company partnerships...")
+
+    for _ in range(3):
+        c1, c2 = random.sample(companies, 2)
+        rel_type = random.choice(["PARTNERED_WITH", "SUBSIDIARY_OF", "SUPPLIES"])
+        
+        query = f"""
+        MATCH (a:Company {{name: $c1}}), (b:Company {{name: $c2}})
+        MERGE (a)-[:{rel_type}]->(b)
+        """
+        await session.run(query, {"c1": c1, "c2": c2})
+
+    logging.info("Creating People who switched companies...")
+
+    bridge_query = """
+    MATCH (p:Person)-[:WORKS_AT]->(current:Company)
+    MATCH (old:Company) WHERE old <> current
+    WITH p, old ORDER BY rand() LIMIT 3
+    MERGE (p)-[:PREVIOUSLY_WORKED_AT]->(old)
+    """
+    await session.run(bridge_query)
+
+    logging.info("Creating the User Node...")
+
+    me_query = """
+    MERGE (u:User {email: 'me@example.com'})
+    SET u.name = 'Your Name', u.job_title = 'Lead Developer'
+    WITH u
+    MATCH (c:Company) ORDER BY rand() LIMIT 1
+    MERGE (u)-[:WORKS_AT]->(c)
+    """
+    await session.run(me_query)
+
 async def seed_database():
     logging.info("Connecting to database...")
     await db.connect()
@@ -71,6 +106,7 @@ async def seed_database():
                 """
                 await session.run(query_lead, lead)
 
+            await create_interconnections(session, companies)
             logging.info("Database seeding completed")
     finally:
         logging.info("Closing database connection...")
