@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Security, HTTPException
+from fastapi import APIRouter, HTTPException
 from app.models.company import CompanyCreate
 from app.database import db
-from main import get_api_key
 
 router = APIRouter(prefix="/companies", tags=["Companies"])
 
-@router.post("/", dependencies=[Security(get_api_key)])
+@router.post("/")
 async def upsert_company(company: CompanyCreate):
     query = """
     MERGE (c:Company {name: $name})
