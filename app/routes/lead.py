@@ -1,10 +1,11 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Security, HTTPException, Query
 from app.models.lead import LeadCreate
 from app.database import db
+from main import get_api_key
 
 router = APIRouter(prefix="/leads", tags=["Leads"])
 
-@router.post("/")
+@router.post("/", dependencies=[Security(get_api_key)])
 async def upsert_lead(lead: LeadCreate):
     query = """
     MATCH (c:Company {name: $company_name})
@@ -33,7 +34,7 @@ async def upsert_lead(lead: LeadCreate):
             "stakeholder": record['contact']
         }
     
-@router.get("/")
+@router.get("/", dependencies=[Security(get_api_key)])
 async def list_dangling_leads(min_value: float = Query(10000, alias='Lead Value')):
     query = """
     MATCH (l:Lead)<-[:STAKEHOLDER_FOR]-(p:Person)

@@ -1,10 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Security, HTTPException
 from app.models.interaction import InteractionCreate
 from app.database import db
+from main import get_api_key
 
 router = APIRouter(prefix="/interactions", tags=["Interactions"])
 
-@router.post("/")
+@router.post("/", dependencies=[Security(get_api_key)])
 async def upsert_interaction(interaction: InteractionCreate):
     query = """
     MATCH (p:Person {email: $person_email})

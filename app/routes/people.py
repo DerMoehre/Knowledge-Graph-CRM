@@ -1,10 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Security, HTTPException
 from app.models.person import PersonCreate
 from app.database import db
+from main import get_api_key
 
 router = APIRouter(prefix="/people", tags=["People"])
 
-@router.post("/")
+@router.post("/", dependencies=[Security(get_api_key)])
 async def upsert_person(person: PersonCreate):
     query = """
     MERGE (p:Person {email: $email})
@@ -20,7 +21,7 @@ async def upsert_person(person: PersonCreate):
             raise HTTPException(status_code=500, detail="Failed to create person")
         return {"message": "Person and Company linked successfully"}
     
-@router.get("/path-finder")
+@router.get("/path-finder", dependencies=[Security(get_api_key)])
 async def find_network_path(start_mail: str, target_mail: str):
     query = """
     MATCH (start:Person {email: $start_email}), (target:Person {email: $target_email})
