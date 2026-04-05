@@ -1,4 +1,4 @@
-# Knowledge CRM API
+# Knowledge-Graph-CRM
 [![Build and deploy to an Azure Web App](https://github.com/DerMoehre/Knowledge-Graph-CRM/actions/workflows/azure-container-webapp.yml/badge.svg?branch=main)](https://github.com/DerMoehre/Knowledge-Graph-CRM/actions/workflows/azure-container-webapp.yml)
 
 ![Azure](https://img.shields.io/badge/Azure-0078D7?style=for-the-badge&logo=microsoft-azure&logoColor=white)
