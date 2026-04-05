@@ -27,7 +27,7 @@
 name: Build and deploy a container to an Azure Web App
 
 env:
-  AZURE_WEBAPP_NAME: knowledge-crm  # set this to the name of your Azure Web App
+  AZURE_WEBAPP_NAME: knowledge-crm-fcddcbf6b5f4g9ea  # set this to the name of your Azure Web App
   ACR_LOGIN_SERVER: graphregistry01.azurecr.io
   ACR_REPOSITORY: crm-api
   
