@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from app.models.company import CompanyCreate
+from app.models.company import CompanyCreate, CompanyOut
+from typing import Optional
 from app.database import db
 
 router = APIRouter(prefix="/companies", tags=["Companies"])
@@ -31,3 +32,28 @@ async def delete_company(company_id: str):
         if record["deleted_count"] == 0:
             raise HTTPException(status_code=404, detail="Company not found")
         return {"message": "Company deleted successfully"}
+    
+@router.get("/", response_model=list[CompanyOut])
+async def get_companies(
+    company_id: Optional[str] = None,
+    name: Optional[str] = None,
+    include_deleted: bool = False
+):
+    query = """
+    MATCH (c:Company)
+    WHERE ($include_deleted = true OR c.is_deleted IS NULL OR c.is_deleted = false)
+      AND ($company_id IS NULL OR c.company_id = $company_id)
+      AND ($name IS NULL OR c.name = $name)
+    RETURN c { .*, id: c.company_id } as company
+    """
+    
+    params = {
+        "company_id": company_id,
+        "name": name,
+        "include_deleted": include_deleted 
+    }
+
+    async with db.get_session() as session:
+        result = await session.run(query, params)
+        records = await result.values()
+        return [record[0] for record in records]

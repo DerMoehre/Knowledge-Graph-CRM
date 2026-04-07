@@ -10,3 +10,6 @@ class CompanyBase(BaseModel):
 
 class CompanyCreate(CompanyBase):
     pass
+
+class CompanyOut(CompanyBase):
+    pass
