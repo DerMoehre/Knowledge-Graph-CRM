@@ -37,7 +37,7 @@ async def upsert_lead(lead: LeadCreate):
 async def list_dangling_leads(min_value: float = Query(10000, alias='Lead Value')):
     query = """
     MATCH (l:Lead)<-[:STAKEHOLDER_FOR]-(p:Person)
-    WHERE l.value > $min_value
+    WHERE l.value > $min_value AND WHERE NOT l.is_deleted
     OPTIONAL MATCH (p)-[:PARTICIPATED_IN]->(i:Interaction)
     WITH l, p, max(i.date) AS last_contact
     RETURN l.title AS lead_title, p.name as stakeholder, last_contact AS last_contact
@@ -53,3 +53,17 @@ async def list_dangling_leads(min_value: float = Query(10000, alias='Lead Value'
                 "last_contact": record["last_contact"]
             })
         return leads
+    
+@router.delete("/{lead_id}")
+async def delete_lead(lead_id: str):
+    query = """
+    MATCH (l:Lead {lead_id: $lead_id})
+    SET l.is_deleted = true, l.deleted_at = datetime()
+    RETURN COUNT(l) AS deleted_count
+    """
+    async with db.get_session() as session:
+        result = await session.run(query, {"lead_id": lead_id})
+        record = await result.single()
+        if record["deleted_count"] == 0:
+            raise HTTPException(status_code=404, detail="Lead not found")
+        return {"message": "Lead deleted successfully"}

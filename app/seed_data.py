@@ -108,7 +108,7 @@ async def seed_database():
                         interaction = interaction_data.model_dump()
                         query_interaction = """
                         MATCH (p:Person {email: $person_email})
-                        CREATE (i:Interaction {type: $type, notes: $notes, date: $date})
+                        CREATE (i:Interaction {interaction_id: $interaction_id, type: $type, notes: $notes, date: $date})
                         MERGE (p)-[:PARTICIPATED_IN]->(i)
                         """
                         await session.run(query_interaction, interaction)
@@ -130,7 +130,7 @@ async def seed_database():
                     query_lead = """
                     MATCH (c:Company {name: $company_name})
                     MATCH (p:Person {email: $contact_email})
-                    CREATE (l:Lead {title: $title, value: $value, status: 'Discovery', created_at: datetime()})
+                    CREATE (l:Lead {lead_id: $lead_id, title: $title, value: $value, status: 'Discovery', created_at: datetime()})
                     MERGE (c)-[:HAS_OPPORTUNITY]->(l)
                     MERGE (p)-[:STAKEHOLDER_FOR]->(l)
                     """

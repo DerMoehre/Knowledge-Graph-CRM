@@ -20,6 +20,20 @@ async def upsert_person(person: PersonCreate):
             raise HTTPException(status_code=500, detail="Failed to create person")
         return {"message": "Person and Company linked successfully"}
     
+@router.delete("/{person_id}")
+async def delete_person(person_id: str):
+    query = """
+    MATCH (p:Person {person_id: $person_id})
+    SET p.is_deleted = true, p.deleted_at = datetime()
+    RETURN COUNT(p) AS deleted_count
+    """
+    async with db.get_session() as session:
+        result = await session.run(query, {"person_id": person_id})
+        record = await result.single()
+        if record["deleted_count"] == 0:
+            raise HTTPException(status_code=404, detail="Person not found")
+        return {"message": "Person deleted successfully"}
+    
 @router.get("/path-finder")
 async def find_network_path(start_mail: str, target_mail: str):
     query = """
