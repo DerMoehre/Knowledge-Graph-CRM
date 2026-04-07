@@ -5,10 +5,20 @@ import random
 from dotenv import load_dotenv
 import os
 import logging
+from models.company import CompanyCreate
+from models.person import PersonCreate
+from models.interaction import InteractionCreate
+from models.lead import LeadCreate
 
 fake = Faker()
 logging.basicConfig(level=logging.INFO)
 load_dotenv()  
+
+INDUSTRIES = [
+    "Technology", "Finance", "Healthcare", "Manufacturing", 
+    "Energy", "Retail", "Education", "Logistics", "Telecommunications"
+]
+
 async def create_interconnections(session, companies):
     logging.info("Creating strategic company partnerships...")
 
@@ -58,35 +68,46 @@ async def seed_database():
             
             logging.info("Phase 1: Creating all companies...")
             for company_name in companies:
+                company_data = CompanyCreate(name=company_name, industry=random.choice(INDUSTRIES), website=fake.url())
+                params = company_data.model_dump()
                 await session.run(
-                    "CREATE (c:Company {name: $name})", 
-                    {"name": company_name}
+                """
+                CREATE (c:Company {
+                    company_id: $company_id, 
+                    name: $name, 
+                    industry: $industry, 
+                    website: $website
+                })
+                """, 
+                params
                 )
             logging.info("Phase 2: Populating employees...")
             for company_name in companies:
                 for _ in range(random.randint(2, 5)):
-                    person = {
-                        "name": fake.name(),
-                        "email": fake.unique.email(),
-                        "job_title": fake.job(),
-                        "company_name": company_name
-                    }
+                    person_data = PersonCreate(
+                        name=fake.name(),
+                        email=fake.unique.email(),
+                        job_title=fake.job(),
+                        company_name=company_name
+                    )
+                    params = person_data.model_dump()
                     query_person = """
                     MATCH (c:Company {name: $company_name})
-                    CREATE (p:Person {email: $email, name: $name, job_title: $job_title})
+                    CREATE (p:Person {person_id: $person_id, email: $email, name: $name, job_title: $job_title})
                     CREATE (p)-[:WORKS_AT]->(c)
                     """
-                    await session.run(query_person, person)
+                    await session.run(query_person, params)
 
                     if random.random() > 0.5:
-                        interaction = {
-                            "email": person["email"],
-                            "type": random.choice(["Call", "Email", "Meeting"]),
-                            "notes": fake.sentence(),
-                            "date": fake.date_time_this_year().isoformat()
-                        }
+                        interaction_data = InteractionCreate(
+                            person_email=person_data.email,
+                            type=random.choice(["Email", "Call", "Meeting"]),
+                            notes=fake.sentence(),
+                            date=str(fake.date_time_this_year().isoformat()),
+                        )
+                        interaction = interaction_data.model_dump()
                         query_interaction = """
-                        MATCH (p:Person {email: $email})
+                        MATCH (p:Person {email: $person_email})
                         CREATE (i:Interaction {type: $type, notes: $notes, date: $date})
                         MERGE (p)-[:PARTICIPATED_IN]->(i)
                         """
@@ -98,12 +119,13 @@ async def seed_database():
                 result = await session.run(pick_query)
                 record = await result.single()
                 if record:
-                    lead = {
-                        "title": f"{fake.word().capitalize()} Implementation",
-                        "value": random.randint(10000, 90000),
-                        "company_name": record["company"],
-                        "contact_email": record["email"]
-                    }
+                    lead_data = LeadCreate(
+                        title=f"{fake.word().capitalize()} Implementation",
+                        value=random.randint(10000, 90000),
+                        company_name=record["company"],
+                        contact_email=record["email"]
+                    )
+                    lead = lead_data.model_dump()
 
                     query_lead = """
                     MATCH (c:Company {name: $company_name})
