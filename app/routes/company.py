@@ -57,3 +57,26 @@ async def get_companies(
         result = await session.run(query, params)
         records = await result.values()
         return [record[0] for record in records]
+
+@router.get("/{company_id}/details")
+async def get_company_details(company_id: str):
+    query = """
+    MATCH (c:Company {company_id: $company_id})
+    OPTIONAL MATCH (c)<-[:WORKS_AT]-(p:Person)
+    OPTIONAL MATCH (c)-[:HAS_OPPORTUNITY]->(l:Lead)
+
+    WITH c,
+        collect(DISTINCT p { .name, .job_title, .email, .person_id }) as employee_list,
+        collect(DISTINCT l { .title, .value, .status, .lead_id }) as lead_list
+    RETURN c { 
+        .*, 
+        employees: employee_list,
+        leads: lead_list
+    } as details
+    """
+    async with db.get_session() as session:
+        result = await session.run(query, {"company_id": company_id})
+        record = await result.single()
+        if not record:
+            raise HTTPException(status_code=404, detail="Company not found")
+        return record["details"]
