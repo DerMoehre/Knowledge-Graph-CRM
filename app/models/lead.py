@@ -1,7 +1,9 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
+import uuid
 
 class LeadBase(BaseModel):
+    lead_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     title: str
     value: float
     status: str = 'Discovery'

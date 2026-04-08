@@ -20,6 +20,45 @@ async def upsert_person(person: PersonCreate):
             raise HTTPException(status_code=500, detail="Failed to create person")
         return {"message": "Person and Company linked successfully"}
     
+@router.delete("/{person_id}")
+async def delete_person(person_id: str):
+    query = """
+    MATCH (p:Person {person_id: $person_id})
+    SET p.is_deleted = true, p.deleted_at = datetime()
+    RETURN COUNT(p) AS deleted_count
+    """
+    async with db.get_session() as session:
+        result = await session.run(query, {"person_id": person_id})
+        record = await result.single()
+        if record["deleted_count"] == 0:
+            raise HTTPException(status_code=404, detail="Person not found")
+        return {"message": "Person deleted successfully"}
+    
+@router.get("/{person_id}/details")
+async def get_person_details(person_id: str):
+    query = """
+    MATCH (p:Person {person_id: $person_id})
+    OPTIONAL MATCH (p)-[:WORKS_AT]->(c:Company)
+    OPTIONAL MATCH (p)-[:PARTICIPATED_IN]->(i:Interaction)
+    OPTIONAL MATCH (p)-[:STAKEHOLDER_FOR]->(l:Lead)
+
+    WITH p, c,
+        collect(DISTINCT i { .type, .notes, .date }) as interaction_list,
+        collect(DISTINCT l { .title, .value, .status }) as lead_list
+    RETURN p { 
+        .*, 
+        company: c { .name, .industry, .website, .company_id },
+        interactions: interaction_list,
+        leads: lead_list
+    } as details
+    """
+    async with db.get_session() as session:
+        result = await session.run(query, {"person_id": person_id})
+        record = await result.single()
+        if not record:
+            raise HTTPException(status_code=404, detail="Person not found")
+        return record["details"]
+    
 @router.get("/path-finder")
 async def find_network_path(start_mail: str, target_mail: str):
     query = """
