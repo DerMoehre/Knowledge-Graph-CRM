@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from app.models.interaction import InteractionCreate
-from app.database import db
+from models.interaction import InteractionCreate
+from database import db
 
 router = APIRouter(prefix="/interactions", tags=["Interactions"])
 

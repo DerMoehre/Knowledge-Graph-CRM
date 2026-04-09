@@ -1,14 +1,17 @@
 [project]
-name = "knowledge-crm"
+name = "backend"
 version = "0.1.0"
-description = "Add your description here"
+description = "FastAPI Backend"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "faker>=40.12.0",
+    "faker>=40.13.0",
     "fastapi>=0.135.3",
     "neo4j>=6.1.0",
     "pydantic[email]>=2.12.5",
     "python-dotenv>=1.2.2",
-    "uvicorn>=0.42.0",
+    "uvicorn>=0.44.0",
 ]
+
+[tool.uv]
+package-mode = false

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
-from app.models.lead import LeadCreate
-from app.database import db
+from models.lead import LeadCreate
+from database import db
 
 router = APIRouter(prefix="/leads", tags=["Leads"])
 

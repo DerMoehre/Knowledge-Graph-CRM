@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
-from app.models.company import CompanyCreate, CompanyOut
 from typing import Optional
-from app.database import db
+from models.company import CompanyCreate, CompanyOut
+from database import db
 
 router = APIRouter(prefix="/companies", tags=["Companies"])
 

@@ -2,8 +2,9 @@ from fastapi import FastAPI, Security, HTTPException, status
 from fastapi.security.api_key import APIKeyHeader
 from contextlib import asynccontextmanager
 import os
-from app.database import db
-from app.routes import people, company, interaction, lead
+from routes import company, interaction, lead
+from database import db
+from routes import people
 
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 API_KEY = os.getenv("APP_API_KEY")

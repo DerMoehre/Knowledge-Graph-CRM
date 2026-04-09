@@ -1,14 +1,14 @@
 import asyncio
 from faker import Faker
-from database import db
+from app.backend.database import db
 import random
 from dotenv import load_dotenv
 import os
 import logging
-from models.company import CompanyCreate
-from models.person import PersonCreate
-from models.interaction import InteractionCreate
-from models.lead import LeadCreate
+from app.backend.models.company import CompanyCreate
+from app.backend.models.person import PersonCreate
+from app.backend.models.interaction import InteractionCreate
+from app.backend.models.lead import LeadCreate
 
 fake = Faker()
 logging.basicConfig(level=logging.INFO)

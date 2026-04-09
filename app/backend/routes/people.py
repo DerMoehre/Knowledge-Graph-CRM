@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from app.models.person import PersonCreate
-from app.database import db
+from models.person import PersonCreate
+from database import db
 
 router = APIRouter(prefix="/people", tags=["People"])
 
