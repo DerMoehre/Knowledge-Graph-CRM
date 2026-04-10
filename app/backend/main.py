@@ -2,7 +2,7 @@ from fastapi import FastAPI, Security, HTTPException, status
 from fastapi.security.api_key import APIKeyHeader
 from contextlib import asynccontextmanager
 import os
-from routes import company, interaction, lead
+from routes import company, interaction, lead, graph
 from database import db
 from routes import people
 
@@ -45,6 +45,7 @@ app.include_router(people.router)
 app.include_router(company.router)
 app.include_router(interaction.router)
 app.include_router(lead.router)
+app.include_router(graph.router)
 
 @app.get("/")
 async def health_check():
